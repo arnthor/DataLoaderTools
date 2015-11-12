@@ -7,7 +7,7 @@ namespace Aih.DataLoader.Tools.StatusHandlers
     public class SQLServerStatusHandler : IStatusHandler
     {
 
-        private string _connectionString;// = @"Data Source = SEC-TST-ITDW\SQLEXPRESS; Database = BatchesInfo; Integrated Security = True;";
+        private string _connectionString;
 
         public SQLServerStatusHandler(string connectionString)
         {

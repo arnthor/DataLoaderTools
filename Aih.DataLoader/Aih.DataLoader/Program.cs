@@ -23,9 +23,30 @@ namespace Aih.DataLoader
 
             //Parse arguments 
             Dictionary<string, string> config = CommandLineParser.GetConfig(args);
-            if (config["DLL"] == "")
+            if (HasValidDllName( config ))
                 return 1;
 
+            IPropertyHandler propertyStore = null;
+            IStatusHandler statusHandler = null;
+
+            if (!SetHandlers(propertyStore, statusHandler))
+                return 1;
+
+
+
+
+            
+            return 0;
+        }
+
+        private static bool HasValidDllName(Dictionary<string, string> config)
+        {
+            //TODO - Make sure the file exists as well
+            return config["DLL"] == "";
+        }
+
+        private static bool SetHandlers(IPropertyHandler propertyStore, IStatusHandler statusHandler)
+        {
             string reportStoreType = "";
             string reportStoreConnectionString = "";
             string porpertyStoreType = "";
@@ -39,22 +60,22 @@ namespace Aih.DataLoader
                 porpertyStoreType = ini.GetSetting("PROPERTY_STORE", "TYPE");
                 propertyStoreConnectionString = ini.GetSetting("PROPERTY_STORE", "CONNECTION");
             }
-            catch(System.IO.FileNotFoundException ex)
+            catch (System.IO.FileNotFoundException ex)
             {
                 Console.WriteLine(ex.Message);
-                return 1;
+                return false;
             }
 
             //Setup property store
             //Currently we hardcode this to SQL Server, the infrastructure to reflect on it is in place
-            IPropertyHandler propertyStore = new Aih.DataLoader.Tools.PropertyHandlers.SQLServerPropertyHandler(propertyStoreConnectionString);
+            propertyStore = new Aih.DataLoader.Tools.PropertyHandlers.SQLServerPropertyHandler(propertyStoreConnectionString);
 
 
             //Setup where to report status to
             //Currently we hardcode this to SQL Server, the infrastructure to reflect on it is in place
-            IStatusHandler statusHandler = new Aih.DataLoader.Tools.StatusHandlers.SQLServerStatusHandler(reportStoreConnectionString);
+            statusHandler = new Aih.DataLoader.Tools.StatusHandlers.SQLServerStatusHandler(reportStoreConnectionString);
 
-            return 0;
+            return true;
         }
     }
 

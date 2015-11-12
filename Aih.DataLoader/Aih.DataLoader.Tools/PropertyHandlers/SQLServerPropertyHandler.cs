@@ -7,7 +7,7 @@ namespace Aih.DataLoader.Tools.PropertyHandlers
     public class SQLServerPropertyHandler : IPropertyHandler
     {
 
-        private string _connectionString; // = @"Data Source = SEC-TST-ITDW\SQLEXPRESS; Database = BatchesInfo; Integrated Security = True;";
+        private string _connectionString; 
 
 
         public SQLServerPropertyHandler(string connectionString)
