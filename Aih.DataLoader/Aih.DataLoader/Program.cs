@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Reflection;
 using Aih.DataLoader.Tools;
 
 namespace Aih.DataLoader
@@ -29,14 +28,72 @@ namespace Aih.DataLoader
             IPropertyHandler propertyStore = null;
             IStatusHandler statusHandler = null;
 
-            if (!SetHandlers(propertyStore, statusHandler))
+            if (!SetHandlers(ref propertyStore, ref statusHandler))
                 return 1;
 
+            if (!LoadDllAndRunDataLoader(config, propertyStore, statusHandler))
+                return 1;
 
-
-
-            
             return 0;
+        }
+
+        private static bool LoadDllAndRunDataLoader(Dictionary<string, string> config, IPropertyHandler propertyHandler, IStatusHandler statusHandler)
+        {
+
+            if ( Directory.Exists("DataLoaders") )
+            {
+                string path = Environment.CurrentDirectory + @"\DataLoaders\" + config["DLL"] + ".dll";
+                bool oneDataLoader = config["TYPENAME"] != "";
+                try
+                {
+                    Assembly plugin = Assembly.LoadFile(path);
+                    Type[] types = plugin.GetTypes();
+
+                    foreach(var type in types)
+                    {
+                        //TODO: Find a cleaner and more readeble solution to this if possible
+                        //This terrible implementation is trying to do the following:
+                        //If the name parameter in config is specified we only want to create an instance of that class and run the DataLoader
+                        //if no name is set then we want to execute RunDataLoader for all classes that implement BaseDataLoader
+
+                        if (oneDataLoader)
+                        {
+                            if (type.Name == config["TYPENAME"])
+                            {
+                                RunDataLoader(type, propertyHandler, statusHandler);
+                            }
+                        }
+                        else
+                        {
+                            RunDataLoader(type, propertyHandler, statusHandler);
+                        }
+
+                    }
+
+                    return true;
+                }
+                catch(System.IO.FileNotFoundException ex)
+                {
+                    Console.WriteLine("Could not find file " + path);
+                    return false;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Folder DataLoaders not found, created folder");
+                Directory.CreateDirectory("DataLoaders");
+                return false;
+            }
+        }
+
+        private static void RunDataLoader(Type type, IPropertyHandler propertyHandler, IStatusHandler statusHandler)
+        {
+            if (type.IsSubclassOf(typeof(BaseDataLoader)))
+            {
+                var loader = (BaseDataLoader)Activator.CreateInstance(type);
+                loader.InitializeHandlers(propertyHandler, statusHandler);
+                loader.RunDataLoader();
+            }
         }
 
         private static bool HasValidDllName(Dictionary<string, string> config)
@@ -45,7 +102,7 @@ namespace Aih.DataLoader
             return config["DLL"] == "";
         }
 
-        private static bool SetHandlers(IPropertyHandler propertyStore, IStatusHandler statusHandler)
+        private static bool SetHandlers(ref IPropertyHandler propertyStore, ref IStatusHandler statusHandler)
         {
             string reportStoreType = "";
             string reportStoreConnectionString = "";

@@ -13,13 +13,15 @@ namespace Aih.DataLoader.Tools
         protected Dictionary<string, string> _properties;
         protected IStatusHandler _statusHandler;
 
-        public BaseDataLoader(IPropertyHandler propertyHandler, IStatusHandler statusHandler)
+        public BaseDataLoader()
         {
-            IPropertyHandler _propertyHandler = propertyHandler;
+           
+        }
 
+        public void InitializeHandlers(IPropertyHandler propertyHandler, IStatusHandler statusHandler)
+        {
             string typeName = this.GetType().Name;
             _properties = propertyHandler.GetProperties(typeName);
-
             _statusHandler = statusHandler;
         }
 
