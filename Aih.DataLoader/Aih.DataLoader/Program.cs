@@ -19,6 +19,11 @@ namespace Aih.DataLoader
         /// </param>
         static int Main(string[] args)
         {
+            //TODO: Make configurable
+            string fileName = DateTime.Now.ToString("yyyy-MM-dd") + "  " + "DataLoader.txt";
+            ConsoleToFileWriter writer = new ConsoleToFileWriter(fileName);
+            Console.SetOut(writer);
+
 
             //Parse arguments 
             Dictionary<string, string> config = CommandLineParser.GetConfig(args);
@@ -74,7 +79,7 @@ namespace Aih.DataLoader
                 }
                 catch(System.IO.FileNotFoundException ex)
                 {
-                    Console.WriteLine("Could not find file " + path);
+                    Console.WriteLine("File: " + path + " exception came up: " + ex.Message);
                     return false;
                 }
             }
