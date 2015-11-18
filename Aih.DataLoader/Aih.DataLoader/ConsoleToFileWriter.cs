@@ -18,7 +18,7 @@ namespace Aih.DataLoader
 
         public override void WriteLine(string line)
         {
-            line = DateTime.Now.ToString("yyyy-MM-dd:HH:mm:ss") + " - " + line + Environment.NewLine;
+            line = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - " + line + Environment.NewLine;
 
             base.WriteLine(line);
             File.AppendAllText(_fileName, line);

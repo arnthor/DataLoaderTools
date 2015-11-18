@@ -19,16 +19,9 @@ namespace Aih.DataLoader
         /// </param>
         static int Main(string[] args)
         {
-            //TODO: Make configurable
-            string fileName = DateTime.Now.ToString("yyyy-MM-dd") + "  " + "DataLoader.txt";
-            ConsoleToFileWriter writer = new ConsoleToFileWriter(fileName);
-            Console.SetOut(writer);
-
 
             //Parse arguments 
             Dictionary<string, string> config = CommandLineParser.GetConfig(args);
-            if (HasValidDllName( config ))
-                return 1;
 
             IPropertyHandler propertyStore = null;
             IStatusHandler statusHandler = null;
@@ -36,60 +29,118 @@ namespace Aih.DataLoader
             if (!SetHandlers(ref propertyStore, ref statusHandler))
                 return 1;
 
+
+            if (HasValidDllName(config))
+                return 1;
+
+
+
+            //TODO: Make configurable
+            string fileName = DateTime.Now.ToString("yyyy-MM-dd") + "  " + "DataLoader.txt";
+            ConsoleToFileWriter writer = new ConsoleToFileWriter(fileName);
+            Console.SetOut(writer);
+            Console.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:SS") + "Started Loader");
+            
+
             if (!LoadDllAndRunDataLoader(config, propertyStore, statusHandler))
                 return 1;
 
             return 0;
         }
 
+       
+
+        private static bool IsDebug(Dictionary<string, string> config)
+        {
+            return config["DEBUG"] == "true";
+        }
+
         private static bool LoadDllAndRunDataLoader(Dictionary<string, string> config, IPropertyHandler propertyHandler, IStatusHandler statusHandler)
         {
-
-            if ( Directory.Exists("DataLoaders") )
+            
+            //UGLY CODE BEGINS
+            string path = "";
+            if (config["PATH"] == "")
             {
-                string path = Environment.CurrentDirectory + @"\DataLoaders\" + config["DLL"] + ".dll";
-                bool oneDataLoader = config["TYPENAME"] != "";
-                try
+                if (Directory.Exists("DataLoaders"))
+                    path = Environment.CurrentDirectory + @"\DataLoaders\" + config["DLL"] + ".dll";
+                else
                 {
-                    Assembly plugin = Assembly.LoadFile(path);
-                    Type[] types = plugin.GetTypes();
-
-                    foreach(var type in types)
-                    {
-                        //TODO: Find a cleaner and more readeble solution to this if possible
-                        //This terrible implementation is trying to do the following:
-                        //If the name parameter in config is specified we only want to create an instance of that class and run the DataLoader
-                        //if no name is set then we want to execute RunDataLoader for all classes that implement BaseDataLoader
-
-                        if (oneDataLoader)
-                        {
-                            if (type.Name == config["TYPENAME"])
-                            {
-                                RunDataLoader(type, propertyHandler, statusHandler);
-                            }
-                        }
-                        else
-                        {
-                            RunDataLoader(type, propertyHandler, statusHandler);
-                        }
-
-                    }
-
-                    return true;
-                }
-                catch(System.IO.FileNotFoundException ex)
-                {
-                    Console.WriteLine("File: " + path + " exception came up: " + ex.Message);
+                    Console.WriteLine("Folder DataLoaders not found, created folder");
+                    Directory.CreateDirectory("DataLoaders");
                     return false;
                 }
             }
             else
             {
-                Console.WriteLine("Folder DataLoaders not found, created folder");
-                Directory.CreateDirectory("DataLoaders");
+                path = config["PATH"] + config["DLL"] + ".dll";
+            }
+            //UGLY CODE ENDS
+
+
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.AssemblyResolve += new ResolveEventHandler(ResolveLoaderDependenciesEventHandler);
+
+
+
+            bool oneDataLoader = config["TYPENAME"] != "";
+            try
+            {
+                Assembly plugin =  Assembly.LoadFile(path);
+                Type[] types = plugin.GetTypes();
+
+                foreach(var type in types)
+                {
+                    //TODO: Find a cleaner and more readeble solution to this if possible
+                    //This terrible implementation is trying to do the following:
+                    //If the name parameter in config is specified we only want to create an instance of that class and run the DataLoader
+                    //if no name is set then we want to execute RunDataLoader for all classes that implement BaseDataLoader
+
+                    if (oneDataLoader)
+                    {
+                        if (type.Name == config["TYPENAME"])
+                        {
+                            RunDataLoader(type, propertyHandler, statusHandler);
+                        }
+                    }
+                    else
+                    {
+                        RunDataLoader(type, propertyHandler, statusHandler);
+                    }
+
+                }
+
+                return true;
+            }
+            catch(System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine("File: " + path + " exception came up: " + ex.Message);
                 return false;
             }
+            
+           
         }
+
+
+        private static Assembly ResolveLoaderDependenciesEventHandler(object sender, ResolveEventArgs args)
+        {
+            //Assemblies referenced to the dataloaders can be found in one of two locations:
+            //1. In the DataLoaders folder, with all the dataloaders
+            //1. In a subfolder to DataLoaders, that is named the same as the dataloader.  I.e. for DemoDataLoader.dll we would have a subfolder /DataLoaders/DemoDataLoader
+
+            Assembly requestingAssembly = args.RequestingAssembly;
+            string dllName = args.Name.Substring(0, args.Name.IndexOf(','));
+
+            //TODO: Reduce hardcoding
+            string path = Environment.CurrentDirectory + @"\DataLoaders\" + requestingAssembly.GetName().Name + @"\" + dllName + ".dll";
+
+            Assembly ass = Assembly.LoadFrom(path);
+
+            string test = "";
+
+            return ass;
+        }
+
 
         private static void RunDataLoader(Type type, IPropertyHandler propertyHandler, IStatusHandler statusHandler)
         {
@@ -152,9 +203,11 @@ namespace Aih.DataLoader
 
             string dllPath = GetValue(args, "-dll");
             string typename = GetValue(args, "-n");
+            string path = GetValue(args, "-path");
 
             config.Add("DLL", dllPath);
             config.Add("TYPENAME", typename);
+            config.Add("PATH", path);
 
             return config;
         }

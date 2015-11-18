@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Aih.DataLoader.Tools.Models;
-using Aih.DataLoader.Tools.StatusHandlers;
-using Aih.DataLoader.Tools.PropertyHandlers;
+
 
 namespace Aih.DataLoader.Tools
 {
@@ -28,7 +27,7 @@ namespace Aih.DataLoader.Tools
 
         public abstract void Initialize();
         public abstract void LoadData();
-        public abstract void TransformData();
+        public abstract void TransformData();   
         public abstract void SaveData();
         public abstract void CleanUp();
 
