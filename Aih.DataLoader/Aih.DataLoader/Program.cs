@@ -29,18 +29,13 @@ namespace Aih.DataLoader
             if (!SetHandlers(ref propertyStore, ref statusHandler))
                 return 1;
 
-
             if (HasValidDllName(config))
                 return 1;
 
+            SetConsole(config);
 
-
-            //TODO: Make configurable
-            string fileName = DateTime.Now.ToString("yyyy-MM-dd") + "  " + "DataLoader.txt";
-            ConsoleToFileWriter writer = new ConsoleToFileWriter(fileName);
-            Console.SetOut(writer);
-            Console.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:SS") + "Started Loader");
-            
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.AssemblyResolve += new ResolveEventHandler(ResolveLoaderDependenciesEventHandler);
 
             if (!LoadDllAndRunDataLoader(config, propertyStore, statusHandler))
                 return 1;
@@ -48,7 +43,16 @@ namespace Aih.DataLoader
             return 0;
         }
 
-       
+
+
+        private static void SetConsole(Dictionary<string, string> config)
+        {
+            //TODO: Make configurable
+            string fileName = DateTime.Now.ToString("yyyy-MM-dd") + "  " + "DataLoader.txt";
+            ConsoleToFileWriter writer = new ConsoleToFileWriter(fileName);
+            Console.SetOut(writer);
+            Console.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:SS") + "Started Loader");
+        }
 
         private static bool IsDebug(Dictionary<string, string> config)
         {
@@ -63,7 +67,9 @@ namespace Aih.DataLoader
             if (config["PATH"] == "")
             {
                 if (Directory.Exists("DataLoaders"))
+                {
                     path = Environment.CurrentDirectory + @"\DataLoaders\" + config["DLL"] + ".dll";
+                }
                 else
                 {
                     Console.WriteLine("Folder DataLoaders not found, created folder");
@@ -76,12 +82,6 @@ namespace Aih.DataLoader
                 path = config["PATH"] + config["DLL"] + ".dll";
             }
             //UGLY CODE ENDS
-
-
-            AppDomain currentDomain = AppDomain.CurrentDomain;
-            currentDomain.AssemblyResolve += new ResolveEventHandler(ResolveLoaderDependenciesEventHandler);
-
-
 
             bool oneDataLoader = config["TYPENAME"] != "";
             try
@@ -107,7 +107,6 @@ namespace Aih.DataLoader
                     {
                         RunDataLoader(type, propertyHandler, statusHandler);
                     }
-
                 }
 
                 return true;
@@ -117,33 +116,46 @@ namespace Aih.DataLoader
                 Console.WriteLine("File: " + path + " exception came up: " + ex.Message);
                 return false;
             }
-            
-           
         }
 
 
         private static Assembly ResolveLoaderDependenciesEventHandler(object sender, ResolveEventArgs args)
         {
-            //Assemblies referenced to the dataloaders can be found in one of two locations:
-            //1. In the DataLoaders folder, with all the dataloaders
-            //1. In a subfolder to DataLoaders, that is named the same as the dataloader.  I.e. for DemoDataLoader.dll we would have a subfolder /DataLoaders/DemoDataLoader
+            string path = "";
+            
+            try
+            {
+                //Assemblies referenced to the dataloaders can be found in a folder that is named the same as the dataloader.  
+                //I.e. for DemoDataLoader.dll we would have a subfolder /DataLoaders/DemoDataLoader
 
-            Assembly requestingAssembly = args.RequestingAssembly;
-            string dllName = args.Name.Substring(0, args.Name.IndexOf(','));
+                string dllName = args.Name.Substring(0, args.Name.IndexOf(','));
+                Assembly ass = null;
 
-            //TODO: Reduce hardcoding
-            string path = Environment.CurrentDirectory + @"\DataLoaders\" + requestingAssembly.GetName().Name + @"\" + dllName + ".dll";
+                if (args.RequestingAssembly == null)
+                {
+                    path = Environment.CurrentDirectory + @"\DataLoaders\"+ Assembly.GetCallingAssembly().GetName().Name + @"\" + dllName + ".dll"; ;
+                    ass = Assembly.LoadFrom(path);
+                }
+                else
+                {
+                    Assembly requestingAssembly = args.RequestingAssembly;
+                    path = Environment.CurrentDirectory + @"\DataLoaders\" + requestingAssembly.GetName().Name + @"\" + dllName + ".dll";
+                }
 
-            Assembly ass = Assembly.LoadFrom(path);
-
-            string test = "";
-
-            return ass;
+                return ass;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Problem resolving assembly: " + path);
+                Console.WriteLine(ex.Message);
+                throw ex;
+            }
         }
 
 
         private static void RunDataLoader(Type type, IPropertyHandler propertyHandler, IStatusHandler statusHandler)
         {
+            
             if (type.IsSubclassOf(typeof(BaseDataLoader)))
             {
                 var loader = (BaseDataLoader)Activator.CreateInstance(type);
