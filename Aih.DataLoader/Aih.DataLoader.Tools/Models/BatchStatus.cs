@@ -10,6 +10,7 @@ namespace Aih.DataLoader.Tools.Models
     {
         public string BatchName { get; set; }
         public string BatchId { get; set; }
+        public string BatchRefrence { get; set; }
         public string Status { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? StartLoadTime { get; set; }

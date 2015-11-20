@@ -39,14 +39,14 @@ namespace Aih.DataLoader.Tools
             string currentClassName = this.GetType().Name;
             //string batchId = Guid.NewGuid().ToString();
 
-            string batchId = Initialize();
+            string batchrefrence = Initialize();
+            string guid = Guid.NewGuid().ToString();
 
-            BatchStatus status = new BatchStatus() { BatchName = currentClassName, BatchId = batchId, StartTime = DateTime.Now, Comment = "", Status = "Started" };
+            BatchStatus status = new BatchStatus() { BatchName = currentClassName, BatchId = guid, BatchRefrence = batchrefrence, StartTime = DateTime.Now, Comment = "", Status = "Started" };
             _statusHandler.CreateBatchStatusRecord(status);
 
             try
             {
-
 
                 SetStatusLoad(status);
                 LoadData();

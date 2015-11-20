@@ -17,6 +17,7 @@ GO
 CREATE TABLE [dbo].[BatchStatus](
 	[batchname] [nchar](100) NOT NULL,
 	[batchid] [nchar](50) NOT NULL,
+	[batchrefrence] [nchar](50) NULL,
 	[start_time] [datetime] NULL,
 	[start_load_time] [datetime] NULL,
 	[start_transform_time] [datetime] NULL,
@@ -26,11 +27,11 @@ CREATE TABLE [dbo].[BatchStatus](
 	[comment] [text] NULL,
 	[status] [nchar](20) NULL,
 	
-	--CONSTRAINT [PK_BatchStatus] PRIMARY KEY
-	--(
-	--	[batchname] ASC,
-	--	[batchid] ASC
-	--)
+	CONSTRAINT [PK_BatchStatus] PRIMARY KEY
+	(
+		[batchname] ASC,
+		[batchid] ASC
+	)
 ) 
 
 GO

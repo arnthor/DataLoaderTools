@@ -57,7 +57,7 @@ namespace Aih.DataLoader.Tools.StatusHandlers
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand("select count(*) from [dbo].[BatchStatus] where [batchid] = @batchid"))
+                using (SqlCommand cmd = new SqlCommand("select count(*) from [dbo].[BatchStatus] where [batchrefrence] = @batchid AND status = 'Finished'"))
                 {
                     cmd.Connection = conn;
                     cmd.Parameters.Clear();
@@ -125,6 +125,7 @@ namespace Aih.DataLoader.Tools.StatusHandlers
             string command = @"INSERT INTO [dbo].[BatchStatus]
            ([batchname]
            ,[batchid]
+           ,[batchrefrence]
            ,[start_time]
            ,[start_load_time]
            ,[start_transform_time]
@@ -136,6 +137,7 @@ namespace Aih.DataLoader.Tools.StatusHandlers
      VALUES
            (@batchname
            ,@batchid
+           ,@batchrefrence
            ,@start_time
            ,@start_load_time
            ,@start_transform_time
@@ -153,6 +155,9 @@ namespace Aih.DataLoader.Tools.StatusHandlers
             cmd.Parameters.Add("@batchname", System.Data.SqlDbType.NChar).Value = status.BatchName;
             cmd.Parameters.Add("@batchid", System.Data.SqlDbType.NChar).Value = status.BatchId;
             cmd.Parameters.Add("@start_time", System.Data.SqlDbType.DateTime).Value = status.StartTime;
+
+            cmd.Parameters.Add("@batchrefrence", System.Data.SqlDbType.NChar).Value = status.BatchRefrence;
+
 
             if (status.StartLoadTime != null)
                 cmd.Parameters.Add("@start_load_time", System.Data.SqlDbType.DateTime).Value = status.StartLoadTime;
@@ -178,7 +183,6 @@ namespace Aih.DataLoader.Tools.StatusHandlers
                 cmd.Parameters.Add("@finish_time", System.Data.SqlDbType.DateTime).Value = status.FinishTime;
             else
                 cmd.Parameters.Add("@finish_time", System.Data.SqlDbType.DateTime).Value = DBNull.Value;
-
 
             cmd.Parameters.Add("@comment", System.Data.SqlDbType.Text).Value = status.Comment;
 
