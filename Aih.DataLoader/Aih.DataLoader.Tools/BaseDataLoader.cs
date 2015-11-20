@@ -24,45 +24,52 @@ namespace Aih.DataLoader.Tools
             _statusHandler = statusHandler;
         }
 
+       
 
-        public abstract void Initialize();
+        public abstract string Initialize();
         public abstract void LoadData();
         public abstract void TransformData();   
         public abstract void SaveData();
         public abstract void CleanUp();
+        
 
 
         public void RunDataLoader()
         {
-
             string currentClassName = this.GetType().Name;
-            string LoadId = Guid.NewGuid().ToString();
+            //string batchId = Guid.NewGuid().ToString();
 
-            BatchStatus status = new BatchStatus() { BatchName = currentClassName, BatchId = LoadId, StartTime = DateTime.Now, Comment = "", Status = "Started" };
+            string batchId = Initialize();
 
-
-
-
-            //TODO: Make calls to the handler that updates the status async?
+            BatchStatus status = new BatchStatus() { BatchName = currentClassName, BatchId = batchId, StartTime = DateTime.Now, Comment = "", Status = "Started" };
             _statusHandler.CreateBatchStatusRecord(status);
-            //TODO: Check - this is all kind of redundant - perhaps better to skip ?
 
-            SetStatusInit(status);
-            Initialize();
+            try
+            {
 
-            SetStatusLoad(status);
-            LoadData();
 
-            SetStatusTransform(status);
-            TransformData();
+                SetStatusLoad(status);
+                LoadData();
 
-            SetStatusSaving(status);
-            SaveData();
+                SetStatusTransform(status);
+                TransformData();
 
-            SetStatusCleanUp(status);
-            CleanUp();
+                SetStatusSaving(status);
+                SaveData();
 
-            SetStatusFinished(status);
+                SetStatusCleanUp(status);
+                CleanUp();
+
+                SetStatusFinished(status);
+
+            }
+            catch (Exception ex)
+            {
+                status.FinishTime = DateTime.Now;
+                status.Status = "Failed";
+                status.Comment = ex.Message;
+                _statusHandler.UpdateBatchStatusRecord(status);
+            }
         }
 
 
@@ -103,13 +110,12 @@ namespace Aih.DataLoader.Tools
             _statusHandler.UpdateBatchStatusRecord(status);
         }
 
-        private void SetStatusInit(BatchStatus status)
-        {
-            status.StartInitTime = DateTime.Now;
-            status.Status = "Initializing";
-            _statusHandler.UpdateBatchStatusRecord(status);
-        }
-
+        //private void SetStatusInit(BatchStatus status)
+        //{
+        //    status.StartInitTime = DateTime.Now;
+        //    status.Status = "Initializing";
+        //    _statusHandler.UpdateBatchStatusRecord(status);
+        //}
 
     }
 }

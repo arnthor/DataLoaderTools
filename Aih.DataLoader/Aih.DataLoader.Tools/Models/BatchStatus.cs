@@ -12,7 +12,6 @@ namespace Aih.DataLoader.Tools.Models
         public string BatchId { get; set; }
         public string Status { get; set; }
         public DateTime? StartTime { get; set; }
-        public DateTime? StartInitTime { get; set; }
         public DateTime? StartLoadTime { get; set; }
         public DateTime? StartTransformTime { get; set; }
         public DateTime? StartSaveTime { get; set; }
@@ -24,5 +23,6 @@ namespace Aih.DataLoader.Tools.Models
         {
             return BatchName + " " + BatchId + " " + Status;
         }
+
     }
 }

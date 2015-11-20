@@ -5,16 +5,17 @@ namespace DemoDataLoader
 {
     public class DemoImplementationOfDataLoaderOne : BaseDataLoader
     {
-        
+
 
         public override void CleanUp()
         {
             Console.WriteLine("DemoImplementationOfDataLoaderOne Cleanup");
         }
 
-        public override void Initialize()
+        public override string Initialize()
         {
             Console.WriteLine("DemoImplementationOfDataLoaderOne Initialize");
+            return Guid.NewGuid().ToString();
         }
 
         public override void LoadData()
@@ -31,5 +32,6 @@ namespace DemoDataLoader
         {
             Console.WriteLine("DemoImplementationOfDataLoaderOne TransformData");
         }
+
     }
 }

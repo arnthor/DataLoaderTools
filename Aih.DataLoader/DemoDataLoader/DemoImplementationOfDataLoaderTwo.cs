@@ -12,9 +12,10 @@ namespace DemoDataLoader
             Console.WriteLine("DemoImplementationOfDataLoaderTwo Cleanup");
         }
 
-        public override void Initialize()
+        public override string Initialize()
         {
             Console.WriteLine("DemoImplementationOfDataLoaderTwo Initialize");
+            return Guid.NewGuid().ToString();
         }
 
         public override void LoadData()

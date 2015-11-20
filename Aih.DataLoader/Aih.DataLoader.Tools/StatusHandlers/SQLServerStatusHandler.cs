@@ -51,6 +51,35 @@ namespace Aih.DataLoader.Tools.StatusHandlers
             return true;
         }
 
+        public bool BatchExists(string batchid)
+        {
+            
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("select count(*) from [dbo].[BatchStatus] where [batchid] = @batchid"))
+                {
+                    cmd.Connection = conn;
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.Add("@batchid", System.Data.SqlDbType.NChar).Value = batchid;
+
+                    try
+                    {
+                        int result = (int)cmd.ExecuteScalar();
+                        if (result == 0)
+                            return false;
+                        else
+                            return true;
+                    }
+                    catch (SqlException exc)
+                    {
+                        Console.WriteLine("Error checking if batch exists.   Exception: " + exc.Message);
+                        throw exc;
+                    }
+                }
+            }
+            
+        }
 
         public bool UpdateBatchStatusRecord(BatchStatus status)
         {
@@ -97,7 +126,6 @@ namespace Aih.DataLoader.Tools.StatusHandlers
            ([batchname]
            ,[batchid]
            ,[start_time]
-           ,[start_init_time]
            ,[start_load_time]
            ,[start_transform_time]
            ,[start_save_time]
@@ -109,7 +137,6 @@ namespace Aih.DataLoader.Tools.StatusHandlers
            (@batchname
            ,@batchid
            ,@start_time
-           ,@start_init_time
            ,@start_load_time
            ,@start_transform_time
            ,@start_save_time
@@ -126,11 +153,6 @@ namespace Aih.DataLoader.Tools.StatusHandlers
             cmd.Parameters.Add("@batchname", System.Data.SqlDbType.NChar).Value = status.BatchName;
             cmd.Parameters.Add("@batchid", System.Data.SqlDbType.NChar).Value = status.BatchId;
             cmd.Parameters.Add("@start_time", System.Data.SqlDbType.DateTime).Value = status.StartTime;
-
-            if (status.StartInitTime != null)
-                cmd.Parameters.Add("@start_init_time", System.Data.SqlDbType.DateTime).Value = status.StartInitTime;
-            else
-                cmd.Parameters.Add("@start_init_time", System.Data.SqlDbType.DateTime).Value = DBNull.Value;
 
             if (status.StartLoadTime != null)
                 cmd.Parameters.Add("@start_load_time", System.Data.SqlDbType.DateTime).Value = status.StartLoadTime;
@@ -170,7 +192,6 @@ namespace Aih.DataLoader.Tools.StatusHandlers
         {
             string update = @"UPDATE [dbo].[BatchStatus]
                 SET [start_time] = @start_time
-              ,[start_init_time] = @start_init_time
               ,[start_load_time] = @start_load_time
               ,[start_transform_time] = @start_transform_time
               ,[start_save_time] = @start_save_time
