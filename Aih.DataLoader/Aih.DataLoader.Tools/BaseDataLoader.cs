@@ -11,6 +11,7 @@ namespace Aih.DataLoader.Tools
 
         protected Dictionary<string, string> _properties;
         protected IStatusHandler _statusHandler;
+        
 
         public BaseDataLoader()
         {
@@ -110,12 +111,6 @@ namespace Aih.DataLoader.Tools
             _statusHandler.UpdateBatchStatusRecord(status);
         }
 
-        //private void SetStatusInit(BatchStatus status)
-        //{
-        //    status.StartInitTime = DateTime.Now;
-        //    status.Status = "Initializing";
-        //    _statusHandler.UpdateBatchStatusRecord(status);
-        //}
 
     }
 }
