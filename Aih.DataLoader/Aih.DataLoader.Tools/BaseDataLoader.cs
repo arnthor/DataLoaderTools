@@ -11,7 +11,7 @@ namespace Aih.DataLoader.Tools
 
         protected Dictionary<string, string> _properties;
         protected IStatusHandler _statusHandler;
-        
+        protected LoaderContext _cntx;
 
         public BaseDataLoader()
         {
@@ -38,8 +38,6 @@ namespace Aih.DataLoader.Tools
         public void RunDataLoader()
         {
             string currentClassName = this.GetType().Name;
-            //string batchId = Guid.NewGuid().ToString();
-
             string batchrefrence = Initialize();
             string guid = Guid.NewGuid().ToString();
 

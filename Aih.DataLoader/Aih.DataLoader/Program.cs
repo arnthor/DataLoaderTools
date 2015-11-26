@@ -19,19 +19,22 @@ namespace Aih.DataLoader
         /// </param>
         static int Main(string[] args)
         {
-
-            //Parse arguments 
-            Dictionary<string, string> config = CommandLineParser.GetConfig(args);
+            Console.Write("Begin Main");
+           //Parse arguments 
+           Dictionary <string, string> config = CommandLineParser.GetConfig(args);
 
             IPropertyHandler propertyStore = null;
             IStatusHandler statusHandler = null;
 
+            Console.Write("Setting handlers");
             if (!SetHandlers(ref propertyStore, ref statusHandler))
                 return 1;
 
+            Console.Write("Checking for dll name");
             if (HasValidDllName(config))
                 return 1;
 
+            Console.Write("Change where the console goes to");
             SetConsole(config);
 
             AppDomain currentDomain = AppDomain.CurrentDomain;
@@ -131,24 +134,18 @@ namespace Aih.DataLoader
                 string dllName = args.Name.Substring(0, args.Name.IndexOf(','));
                 Assembly ass = null;
 
-                if (args.RequestingAssembly == null)
-                {
-                    path = Environment.CurrentDirectory + @"\DataLoaders\"+ Assembly.GetCallingAssembly().GetName().Name + @"\" + dllName + ".dll"; ;
-                    ass = Assembly.LoadFrom(path);
-                }
-                else
-                {
-                    Assembly requestingAssembly = args.RequestingAssembly;
-                    path = Environment.CurrentDirectory + @"\DataLoaders\" + requestingAssembly.GetName().Name + @"\" + dllName + ".dll";
-                }
+                Assembly requestingAssembly = args.RequestingAssembly;
+                path = Environment.CurrentDirectory + @"\DataLoaders\Refrences\" + dllName + ".dll";
 
+                ass = Assembly.LoadFrom(path);
                 return ass;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Problem resolving assembly: " + path);
                 Console.WriteLine(ex.Message);
-                throw ex;
+                //throw ex;
+                return null;
             }
         }
 
