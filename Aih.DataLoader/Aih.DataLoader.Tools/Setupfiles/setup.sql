@@ -26,6 +26,7 @@ CREATE TABLE [dbo].[BatchStatus](
 	[finish_time] [datetime] NULL,
 	[comment] [text] NULL,
 	[status] [nchar](20) NULL,
+	[handled][smallint] NULL,
 	
 	CONSTRAINT [PK_BatchStatus] PRIMARY KEY
 	(

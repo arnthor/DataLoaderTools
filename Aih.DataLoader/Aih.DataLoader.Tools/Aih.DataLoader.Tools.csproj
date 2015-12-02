@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseDataLoader.cs" />
+    <Compile Include="Exceptions\DataLoaderException.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Models\BatchStatus.cs" />
     <Compile Include="Models\LoaderContext.cs" />

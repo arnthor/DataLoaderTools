@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Aih.DataLoader.Tools.Models;
+using Aih.DataLoader.Tools.Exceptions;
 
 
 namespace Aih.DataLoader.Tools
@@ -62,6 +63,14 @@ namespace Aih.DataLoader.Tools
                 SetStatusFinished(status);
 
             }
+            catch(DataLoaderException dx)
+            {
+                status.FinishTime = DateTime.Now;
+                status.Status = dx.Status;
+                status.Comment = dx.Message;
+                _statusHandler.UpdateBatchStatusRecord(status);
+            }
+
             catch (Exception ex)
             {
                 status.FinishTime = DateTime.Now;
