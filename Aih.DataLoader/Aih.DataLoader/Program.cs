@@ -57,10 +57,10 @@ namespace Aih.DataLoader
             Console.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:SS") + "Started Loader");
         }
 
-        private static bool IsDebug(Dictionary<string, string> config)
-        {
-            return config["DEBUG"] == "true";
-        }
+        //private static bool IsDebug(Dictionary<string, string> config)
+        //{
+        //    return config["DEBUG"] == "true";
+        //}
 
         private static bool LoadDllAndRunDataLoader(Dictionary<string, string> config, IPropertyHandler propertyHandler, IStatusHandler statusHandler)
         {

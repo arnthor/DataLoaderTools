@@ -12,6 +12,7 @@ namespace Aih.DataLoader.Tools
         Dictionary<string, string> GetProperties(string batchname);
     }
 
+
     public interface IStatusHandler
     {
         bool CreateBatchStatusRecord(BatchStatus status);
